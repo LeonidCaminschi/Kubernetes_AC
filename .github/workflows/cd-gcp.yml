@@ -22,11 +22,6 @@ jobs:
     environment: Google Cloud
 
     steps:
-      - name: Debug variables
-        run: |
-          echo "Provider is set? ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER != '' }}"
-          echo "Service account is set? ${{ vars.GCP_SERVICE_ACCOUNT != '' }}"
-
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -56,6 +51,15 @@ jobs:
           cluster_name: ${{ env.GKE_CLUSTER_NAME }}
           location: ${{ env.GKE_CLUSTER_LOCATION }}
           project_id: ${{ env.GCP_PROJECT_ID }}
+
+      - name: Deploy manifests to GKE 
+        env:
+          IMAGE_URI: ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY_REPOSITORY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+        run: |
+          kubectl create namespace calculator --dry-run=client -o yaml | kubectl apply -f -
+          kubectl apply -k k8s
+          kubectl -n calculator set image deployment/calculator-app app="${IMAGE_URI}"
+          kubectl rollout status deployment/calculator-app -n calculator --timeout=180s
 
       - name: Deploy to GKE
         env:

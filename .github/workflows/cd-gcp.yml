@@ -1,0 +1,66 @@
+name: CD to GKE
+
+on:
+  push:
+    branches: [ main ]
+
+env:
+  GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+  GCP_REGION: ${{ vars.GCP_REGION }}
+  GKE_CLUSTER_NAME: ${{ vars.GKE_CLUSTER_NAME }}
+  GKE_CLUSTER_LOCATION: ${{ vars.GKE_CLUSTER_LOCATION }}
+  ARTIFACT_REGISTRY_REPOSITORY: ${{ vars.ARTIFACT_REGISTRY_REPOSITORY }}
+  IMAGE_NAME: calculator-app
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: |
+          gcloud auth configure-docker "${GCP_REGION}-docker.pkg.dev" --quiet
+
+      - name: Build and push image to Artifact Registry
+        env:
+          IMAGE_URI: ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY_REPOSITORY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+        run: |
+          docker build -t "${IMAGE_URI}" ./app
+          docker push "${IMAGE_URI}"
+
+      - name: Get GKE credentials
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: ${{ env.GKE_CLUSTER_NAME }}
+          location: ${{ env.GKE_CLUSTER_LOCATION }}
+          project_id: ${{ env.GCP_PROJECT_ID }}
+
+      - name: Update image reference in Kubernetes manifests
+        env:
+          IMAGE_URI: ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY_REPOSITORY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('k8s/kustomization.yaml')
+          text = path.read_text()
+          start = text.index('images:')
+          block = text[:start] + f"images:\n  - name: calculator-app\n    newName: {IMAGE_URI.rsplit(':', 1)[0]}\n    newTag: {IMAGE_URI.rsplit(':', 1)[1]}\n"
+          path.write_text(block)
+          PY
+
+      - name: Deploy to GKE
+        run: |
+          kubectl apply -k k8s
+          kubectl rollout status deployment/calculator-app -n calculator --timeout=180s

@@ -35,6 +35,24 @@ docker build -t ghcr.io/your-org/calculator-app:1.0.0 .
 
 The Kubernetes base uses `calculator-app` as the image name and `k8s/kustomization.yaml` rewrites it to `ghcr.io/your-org/calculator-app:1.0.0`. In CI/CD, update the tag to the commit SHA or release version before deploying.
 
+## Google Cloud CD
+
+The repository includes a separate GitHub Actions workflow at `.github/workflows/cd-gcp.yml` for deploying to Google Cloud.
+
+It expects these GitHub repository variables:
+
+- `GCP_PROJECT_ID`
+- `GCP_REGION`
+- `GKE_CLUSTER_NAME`
+- `GKE_CLUSTER_LOCATION`
+- `ARTIFACT_REGISTRY_REPOSITORY`
+
+It also expects this secret:
+
+- `GCP_SA_KEY` - the JSON service account key for a Google Cloud service account with permissions to push to Artifact Registry and deploy to GKE.
+
+The workflow builds the app image from `app/Dockerfile`, pushes it to Artifact Registry, gets GKE credentials, and applies `k8s/` to the cluster.
+
 ## Kubernetes on Docker Desktop
 
 1. Start Kubernetes in Docker Desktop.

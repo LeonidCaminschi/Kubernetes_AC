@@ -28,8 +28,12 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000
 
 ```bash
 cd app
-docker build -t calculator-app:1.0 .
+docker build -t ghcr.io/your-org/calculator-app:1.0.0 .
 ```
+
+## Image reference used by Kubernetes
+
+The Kubernetes base uses `calculator-app` as the image name and `k8s/kustomization.yaml` rewrites it to `ghcr.io/your-org/calculator-app:1.0.0`. In CI/CD, update the tag to the commit SHA or release version before deploying.
 
 ## Kubernetes on Docker Desktop
 
@@ -40,11 +44,11 @@ docker build -t calculator-app:1.0 .
 kubectl apply -k k8s
 ```
 
-3. Build the app image locally so Kubernetes can pull it from the Docker Desktop image store:
+3. Build the app image with the same registry name used by Kustomize, then push it in CI/CD or load it into Docker Desktop locally:
 
 ```bash
 cd app
-docker build -t calculator-app:1.0 .
+docker build -t ghcr.io/your-org/calculator-app:1.0.0 .
 ```
 
 4. Open the app at `http://localhost:30080`.

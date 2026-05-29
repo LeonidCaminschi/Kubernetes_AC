@@ -4,6 +4,7 @@ metadata:
   name: calculator-postgres
   namespace: calculator
 spec:
+  clusterIP: None
   selector:
     app: calculator-postgres
   ports:

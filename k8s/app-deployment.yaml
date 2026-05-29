@@ -15,10 +15,22 @@ spec:
     spec:
       containers:
         - name: app
-          image: calculator-app:1.0
+          image: calculator-app
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8000
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 20
           env:
             - name: DB_HOST
               value: calculator-postgres

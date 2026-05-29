@@ -6,8 +6,12 @@ namespace: calculator
 resources:
   - namespace.yaml
   - postgres-secret.yaml
-  - postgres-pvc.yaml
   - postgres-deployment.yaml
   - postgres-service.yaml
   - app-deployment.yaml
   - app-service.yaml
+
+images:
+  - name: calculator-app
+    newName: ghcr.io/your-org/calculator-app
+    newTag: 1.0.0

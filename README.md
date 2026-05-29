@@ -46,12 +46,12 @@ It expects these GitHub repository variables:
 - `GKE_CLUSTER_NAME`
 - `GKE_CLUSTER_LOCATION`
 - `ARTIFACT_REGISTRY_REPOSITORY`
+- `GCP_WORKLOAD_IDENTITY_PROVIDER`
+- `GCP_SERVICE_ACCOUNT`
 
-It also expects this secret:
+It does not use a JSON service account key. The workflow uses Workload Identity Federation through the Google Cloud provider and service account variables above.
 
-- `GCP_SA_KEY` - the JSON service account key for a Google Cloud service account with permissions to push to Artifact Registry and deploy to GKE.
-
-The workflow builds the app image from `app/Dockerfile`, pushes it to Artifact Registry, gets GKE credentials, and applies `k8s/` to the cluster.
+The workflow builds the app image from `app/Dockerfile`, pushes it to Artifact Registry, gets GKE credentials, and updates the running deployment in the cluster.
 
 ## Kubernetes on Docker Desktop
 

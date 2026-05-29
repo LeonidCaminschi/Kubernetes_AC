@@ -51,21 +51,9 @@ jobs:
           location: ${{ env.GKE_CLUSTER_LOCATION }}
           project_id: ${{ env.GCP_PROJECT_ID }}
 
-      - name: Update image reference in Kubernetes manifests
+      - name: Deploy to GKE
         env:
           IMAGE_URI: ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY_REPOSITORY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
         run: |
-          python - <<'PY'
-          from pathlib import Path
-
-          path = Path('k8s/kustomization.yaml')
-          text = path.read_text()
-          start = text.index('images:')
-          block = text[:start] + f"images:\n  - name: calculator-app\n    newName: {IMAGE_URI.rsplit(':', 1)[0]}\n    newTag: {IMAGE_URI.rsplit(':', 1)[1]}\n"
-          path.write_text(block)
-          PY
-
-      - name: Deploy to GKE
-        run: |
-          kubectl apply -k k8s
+          kubectl -n calculator set image deployment/calculator-app app="${IMAGE_URI}"
           kubectl rollout status deployment/calculator-app -n calculator --timeout=180s

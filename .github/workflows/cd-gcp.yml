@@ -19,8 +19,14 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: Google Cloud
 
     steps:
+      - name: Debug variables
+        run: |
+          echo "Provider is set? ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER != '' }}"
+          echo "Service account is set? ${{ vars.GCP_SERVICE_ACCOUNT != '' }}"
+
       - name: Checkout repository
         uses: actions/checkout@v4
 

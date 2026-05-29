@@ -51,6 +51,31 @@ cd app
 docker build -t ghcr.io/your-org/calculator-app:1.0.0 .
 ```
 
-4. Open the app at `http://localhost:30080`.
+4. Try the NodePort URL first:
+
+```bash
+http://localhost:30080
+```
+
+5. If NodePort does not open in your Docker Desktop/WSL setup, use port-forward instead:
+
+```bash
+kubectl port-forward -n calculator svc/calculator-app 8000:8000
+```
+
+Then open:
+
+```bash
+http://localhost:8000
+```
+
+6. For Postgres Database you can do the following:
+
+```bash
+kubectl port-forward -n calculator svc/calculator-postgres 5432:5432
+psql -h localhost -p 5432 -U calculator -d calculator
+```
+
+With the password being "calculator123" or check manifest
 
 If you want a single command apply flow later, a `kustomization.yaml` can be added on top of these manifests.

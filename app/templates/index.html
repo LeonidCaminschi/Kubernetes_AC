@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Calculator History App</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+    <script defer src="/static/app.js"></script>
+  </head>
+  <body>
+    <main class="shell">
+      <section class="hero">
+        <p class="eyebrow">Python + FastAPI + PostgreSQL</p>
+        <h1>Calculator with saved history</h1>
+        <p class="lede">
+          Perform calculations in the browser, store every result in Postgres, and
+          run the app and database in separate Kubernetes pods.
+        </p>
+      </section>
+
+      <section class="card calculator-card">
+        <form id="calculator-form" class="calculator-form">
+          <label>
+            <span>Left value</span>
+            <input id="left-value" name="left" type="number" step="any" value="12" required />
+          </label>
+
+          <label>
+            <span>Operator</span>
+            <select id="operator" name="operator">
+              <option value="+">+</option>
+              <option value="-">-</option>
+              <option value="*">*</option>
+              <option value="/">/</option>
+            </select>
+          </label>
+
+          <label>
+            <span>Right value</span>
+            <input id="right-value" name="right" type="number" step="any" value="3" required />
+          </label>
+
+          <button type="submit">Calculate</button>
+        </form>
+
+        <div class="result-panel">
+          <p class="result-label">Latest result</p>
+          <strong id="result-value">Waiting for input</strong>
+          <p id="result-detail" class="result-detail"></p>
+        </div>
+      </section>
+
+      <section class="card history-card">
+        <div class="section-heading">
+          <h2>Calculation history</h2>
+          <button id="refresh-history" type="button" class="ghost-button">Refresh</button>
+        </div>
+        <div id="history-list" class="history-list"></div>
+      </section>
+    </main>
+  </body>
+</html>
